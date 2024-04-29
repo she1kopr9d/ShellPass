@@ -1,0 +1,69 @@
+version: '3'
+
+services:
+  shellpass_user_server:
+    build: .
+    container_name: shellpass_user_server
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/usr/src/app
+    ports:
+      - "8001:8000"
+    depends_on:
+      - database
+      - redis
+
+  shellpass_organization_server:
+    build: .
+    container_name: shellpass_organization_server
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/usr/src/app
+    ports:
+      - "8002:8000"
+    depends_on:
+      - database
+      - redis
+
+  shellpass_database_server:
+    build: .
+    container_name: shellpass_database_server
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/usr/src/app
+    ports:
+      - "8003:8000"
+    depends_on:
+      - database
+      - redis  
+
+  redis:
+    image: redis:latest
+    restart: always
+    container_name: shellpass_redis
+    ports:
+      - "6380:6379"
+    volumes:
+      - redisdata:/root/redis
+      - redisconf:/usr/local/etc/redis/redis.conf
+    environment:
+      - REDIS_PASSWORD=my-password
+      - REDIS_PORT=6379
+      - REDIS_DATABASES=16
+
+  database:
+    image: postgres
+    environment:
+      - POSTGRES_DB=shellpass_db
+      - POSTGRES_USER=server
+      - POSTGRES_PASSWORD=server_connect
+    ports:
+      - "5433:5432"
+    container_name: shellpass_db
+    volumes:
+      - pgdbdata:/var/lib/postgresql/data/
+
+volumes:
+  pgdbdata: null
+  redisdata: null
+  redisconf: null

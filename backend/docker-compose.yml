@@ -1,0 +1,107 @@
+version: '3'
+
+services:
+  shellpass_user_server:
+    build: ./shellpass
+    container_name: shellpass_user_server
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./shellpass:/usr/src/app
+    ports:
+      - "8001:8000"
+    depends_on:
+      - shellpass_db
+      - shellpass_redis
+
+  shellpass_organization_server:
+    build: ./shellpass
+    container_name: shellpass_organization_server
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./shellpass:/usr/src/app
+    ports:
+      - "8002:8000"
+    depends_on:
+      - shellpass_db
+      - shellpass_redis
+
+  shellpass_database_server:
+    build: ./shellpass
+    container_name: shellpass_database_server
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./shellpass:/usr/src/app
+    ports:
+      - "8003:8000"
+    depends_on:
+      - shellpass_db
+      - shellpass_redis
+
+  shellpass_redis:
+    image: redis:latest
+    restart: always
+    container_name: shellpass_redis
+    ports:
+      - "6380:6379"
+    volumes:
+      - redisdata_pass:/root/redis
+      - redisconf_pass:/usr/local/etc/redis/redis.conf
+    environment:
+      - REDIS_PASSWORD=my-password
+      - REDIS_PORT=6379
+      - REDIS_DATABASES=16
+
+  shellpass_db:
+    image: postgres
+    environment:
+      - POSTGRES_DB=shellpass_db
+      - POSTGRES_USER=server
+      - POSTGRES_PASSWORD=server_connect
+    ports:
+      - "5433:5432"
+    container_name: shellpass_db
+    volumes:
+      - pgdbdata_pass:/var/lib/postgresql/data/
+
+  shellcore:
+    build: ./shellcore
+    container_name: shellcore
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./shellcore:/usr/src/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - shellcore_db
+      - shellcore_redis
+
+  shellcore_redis:
+    image: redis:latest
+    restart: always
+    container_name: shellcore_redis
+    volumes:
+      - redisdata_core:/root/redis
+      - redisconf_core:/usr/local/etc/redis/redis.conf
+    environment:
+      - REDIS_PASSWORD=my-password
+      - REDIS_PORT=6379
+      - REDIS_DATABASES=16
+
+  shellcore_db:
+    image: postgres
+    environment:
+      - POSTGRES_DB=shellcore_db
+      - POSTGRES_USER=server
+      - POSTGRES_PASSWORD=server_connect
+    container_name: shellcore_db
+    ports:
+      - "5434:5432"
+    volumes:
+      - pgdbdata_core:/var/lib/postgresql/data/
+volumes:
+  pgdbdata_core: null
+  pgdbdata_pass: null
+  redisdata_pass: null
+  redisconf_pass: null
+  redisdata_core: null
+  redisconf_core: null

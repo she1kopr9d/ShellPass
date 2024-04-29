@@ -1,0 +1,43 @@
+version: '3'
+
+services:
+  shellcore:
+    build: .
+    container_name: shellcore
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/usr/src/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - database
+      - redis
+
+  redis:
+    image: redis:latest
+    restart: always
+    container_name: shellcore_redis
+    volumes:
+      - redisdata:/root/redis
+      - redisconf:/usr/local/etc/redis/redis.conf
+    environment:
+      - REDIS_PASSWORD=my-password
+      - REDIS_PORT=6379
+      - REDIS_DATABASES=16
+
+  database:
+    image: postgres
+    environment:
+      - POSTGRES_DB=shellcore_db
+      - POSTGRES_USER=server
+      - POSTGRES_PASSWORD=server_connect
+    container_name: shellcore_db
+    ports:
+      - "5434:5432"
+    volumes:
+      - pgdbdata:/var/lib/postgresql/data/
+
+volumes:
+  pgdbdata: null
+  redisdata: null
+  redisconf: null
